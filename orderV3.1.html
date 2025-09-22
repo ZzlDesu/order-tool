@@ -1,0 +1,1131 @@
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单信息拆分工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --accent-color: #7209b7;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+            --gray-color: #6c757d;
+            --light-gray: #e9ecef;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            color: var(--gray-color);
+            font-size: 1.2rem;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 12px 12px 0 0;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            background: var(--light-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            color: var(--gray-color);
+            min-width: 150px;
+        }
+        
+        .tab.active {
+            background: white;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+        }
+        
+        .tab i {
+            margin-right: 10px;
+        }
+        
+        .tab:hover {
+            background: white;
+            color: var(--primary-color);
+        }
+        
+        .content {
+            background: white;
+            border-radius: 0 0 12px 12px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--light-gray);
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 20px;
+            border: 2px solid var(--light-gray);
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 16px;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .parse-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .parse-btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        .copy-btn {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .copy-btn:hover {
+            background: #3aafd9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 201, 240, 0.3);
+        }
+        
+        .clear-btn {
+            background: var(--warning-color);
+            color: white;
+        }
+        
+        .clear-btn:hover {
+            background: #d61a6d;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(247, 37, 133, 0.3);
+        }
+        
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 30px 0;
+            border: 2px solid var(--light-gray);
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 1200px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--light-gray);
+            white-space: nowrap;
+        }
+        
+        th {
+            background: var(--primary-color);
+            color: white;
+            position: sticky;
+            top: 0;
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover {
+            background-color: #e9ecef;
+        }
+        
+        .stats {
+            margin-top: 20px;
+            font-size: 16px;
+            color: var(--gray-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stats-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .instructions {
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            border-left: 4px solid var(--primary-color);
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 8px;
+        }
+        
+        .instructions h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: var(--gray-color);
+            font-size: 14px;
+        }
+        
+        /* 商品编码查询部分 */
+        .product-section {
+            padding: 25px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        .search-container {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        #product-search {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 6px 0 0 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        #product-search:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        #search-button {
+            border-radius: 0 6px 6px 0;
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .product-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .product-item:last-child {
+            border-bottom: none;
+        }
+        
+        .product-item:hover {
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+        
+        .product-name {
+            flex: 2;
+        }
+        
+        .product-code {
+            flex: 1;
+            text-align: right;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .highlight {
+            background-color: #fff8e1;
+            font-weight: bold;
+        }
+        
+        .selected-product {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .selected-product h3 {
+            margin-bottom: 10px;
+            color: #2e7d32;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: #28a745;
+            color: white;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: transform 0.3s, opacity 0.3s;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .table-container {
+                overflow-x: auto;
+            }
+            
+            .search-container {
+                flex-direction: column;
+            }
+            
+            #product-search {
+                border-radius: 6px;
+                margin-bottom: 10px;
+            }
+            
+            #search-button {
+                border-radius: 6px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>订单信息拆分工具</h1>
+            <p class="subtitle">快速解析订单信息并导出为表格格式</p>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="general">
+                <i class="fas fa-table"></i>通用格式
+            </div>
+            <div class="tab" data-tab="lpt">
+                <i class="fas fa-list-alt"></i>LPT格式
+            </div>
+            <div class="tab" data-tab="hy">
+                <i class="fas fa-map-marker-alt"></i>HY格式
+            </div>
+        </div>
+        
+        <div class="content">
+            <!-- 通用格式 -->
+            <div class="tab-content active" id="general">
+                <h2>通用格式解析</h2>
+                <textarea id="inputDataGeneral" placeholder="请粘贴快捷复制的订单信息..."></textarea>
+                
+                <div class="button-group">
+                    <button class="parse-btn" data-format="general">
+                        <i class="fas fa-cogs"></i>解析订单信息
+                    </button>
+                    <button class="clear-btn" data-clear="general">
+                        <i class="fas fa-broom"></i>清空输入
+                    </button>
+                    <button class="copy-btn" data-copy="general">
+                        <i class="fas fa-copy"></i>复制到剪贴板
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table id="resultTableGeneral">
+                        <thead>
+                            <tr>
+                                <th>订单编号</th>
+                                <th>收件人</th>
+                                <th>手机号</th>
+                                <th>地址</th>
+                                <th>颜色分类</th>
+                                <th>数量</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" style="text-align: center;">请输入订单信息并点击解析</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="stats">
+                    <i class="fas fa-chart-bar"></i>已解析: <span class="stats-badge" id="orderCountGeneral">0</span> 个订单
+                </div>
+                
+                <div class="instructions">
+                    <h3>通用格式说明：</h3>
+                    <ul>
+                        <li>此格式包含完整的订单信息，包括配送拨打信息</li>
+                        <li>表格列顺序：订单编号、收件人、手机号、地址、颜色分类、数量</li>
+                        <li>适合需要完整信息的场景</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- LPT格式 -->
+            <div class="tab-content" id="lpt">
+                <h2>LPT格式解析</h2>
+                <textarea id="inputDataLpt" placeholder="请粘贴快捷复制的订单信息..."></textarea>
+                
+                <div class="button-group">
+                    <button class="parse-btn" data-format="lpt">
+                        <i class="fas fa-cogs"></i>解析订单信息
+                    </button>
+                    <button class="clear-btn" data-clear="lpt">
+                        <i class="fas fa-broom"></i>清空输入
+                    </button>
+                    <button class="copy-btn" data-copy="lpt">
+                        <i class="fas fa-copy"></i>复制到剪贴板
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table id="resultTableLpt">
+                        <thead>
+                            <tr>
+                                <th>规格</th>
+                                <th>数量</th>
+                                <th>收货信息</th>
+                                <th>订单编号</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" style="text-align: center;">请输入订单信息并点击解析</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="stats">
+                    <i class="fas fa-chart-bar"></i>已解析: <span class="stats-badge" id="orderCountLpt">0</span> 个订单
+                </div>
+                
+                <div class="instructions">
+                    <h3>LPT格式说明：</h3>
+                    <ul>
+                        <li>此格式按照LPT要求排列字段顺序</li>
+                        <li>表格列顺序：规格（颜色分类）、数量、收货信息、订单编号</li>
+                        <li>收货信息保持原始格式，包括逗号</li>
+                        <li>适合特定场景使用</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- HY格式 -->
+            <div class="tab-content" id="hy">
+                <h2>HY格式解析</h2>
+                <textarea id="inputDataHy" placeholder="请粘贴订单信息..."></textarea>
+                
+                <div class="button-group">
+                    <button class="parse-btn" data-format="hy">
+                        <i class="fas fa-cogs"></i>解析订单信息
+                    </button>
+                    <button class="clear-btn" data-clear="hy">
+                        <i class="fas fa-broom"></i>清空输入
+                    </button>
+                    <button class="copy-btn" data-copy="hy">
+                        <i class="fas fa-copy"></i>复制到剪贴板
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table id="resultTableHy">
+                        <thead>
+                            <tr>
+                                <th>收货人</th>
+                                <th>昵称（旺旺号）</th>
+                                <th>手机号码</th>
+                                <th>固定电话</th>
+                                <th>仓库名称</th>
+                                <th>省</th>
+                                <th>市</th>
+                                <th>区</th>
+                                <th>详细地址</th>
+                                <th>邮政编码</th>
+                                <th>商家编码</th>
+                                <th>数量</th>
+                                <th>商品付款金额</th>
+                                <th>运费</th>
+                                <th>发票抬头</th>
+                                <th>买家留言</th>
+                                <th>卖家备注</th>
+                                <th>平台交易号</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="18" style="text-align: center;">请输入订单信息并点击解析</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="stats">
+                    <i class="fas fa-chart-bar"></i>已解析: <span class="stats-badge" id="orderCountHy">0</span> 个订单
+                </div>
+                
+                <!-- 商品编码查询部分 -->
+                <div class="product-section">
+                    <h3>商品编码查询</h3>
+                    <div class="search-container">
+                        <input type="text" id="product-search" placeholder="输入商品名称或编码...">
+                        <button id="search-button"><i class="fas fa-search"></i> 搜索</button>
+                    </div>
+                    
+                    <div class="selected-product">
+                        <h3>已选商品</h3>
+                        <div id="selected-product-info">暂无选择</div>
+                    </div>
+                    
+                    <h3 style="margin: 20px 0 10px;">商品列表</h3>
+                    <div class="product-list" id="product-list">
+                        <!-- 商品列表将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>订单信息拆分工具 © </p>
+        </footer>
+    </div>
+
+    <div class="notification" id="notification">已复制到剪贴板！</div>
+
+    <script>
+        // 选项卡切换功能
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有active类
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // 添加active类到当前选项卡
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // 解析按钮事件
+        document.querySelectorAll('.parse-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const format = this.getAttribute('data-format');
+                const capitalizedFormat = format.charAt(0).toUpperCase() + format.slice(1);
+                const inputData = document.getElementById(`inputData${capitalizedFormat}`).value;
+                
+                if (!inputData.trim()) {
+                    alert('请输入信息');
+                    return;
+                }
+                
+                if (format === 'general') {
+                    const orders = parseOrdersGeneral(inputData);
+                    displayOrdersGeneral(orders);
+                } else if (format === 'lpt') {
+                    const orders = parseOrdersLpt(inputData);
+                    displayOrdersLpt(orders);
+                } else if (format === 'hy') {
+                    const orders = parseOrdersHy(inputData);
+                    displayOrdersHy(orders);
+                }
+            });
+        });
+        
+        // 清空按钮事件
+        document.querySelectorAll('.clear-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const format = this.getAttribute('data-clear');
+                const capitalizedFormat = format.charAt(0).toUpperCase() + format.slice(1);
+                document.getElementById(`inputData${capitalizedFormat}`).value = '';
+                
+                if (format === 'general') {
+                    document.querySelector('#resultTableGeneral tbody').innerHTML = 
+                        '<tr><td colspan="6" style="text-align: center;">请输入订单信息并点击解析</td></tr>';
+                    document.getElementById('orderCountGeneral').textContent = '0';
+                } else if (format === 'lpt') {
+                    document.querySelector('#resultTableLpt tbody').innerHTML = 
+                        '<tr><td colspan="4" style="text-align: center;">请输入订单信息并点击解析</td></tr>';
+                    document.getElementById('orderCountLpt').textContent = '0';
+                } else if (format === 'hy') {
+                    document.querySelector('#resultTableHy tbody').innerHTML = 
+                        '<tr><td colspan="18" style="text-align: center;">请输入订单信息并点击解析</td></tr>';
+                    document.getElementById('orderCountHy').textContent = '0';
+                }
+            });
+        });
+        
+        // 复制按钮事件
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const format = this.getAttribute('data-copy');
+                let table;
+                
+                if (format === 'general') {
+                    table = document.getElementById('resultTableGeneral');
+                } else if (format === 'lpt') {
+                    table = document.getElementById('resultTableLpt');
+                } else if (format === 'hy') {
+                    table = document.getElementById('resultTableHy');
+                }
+                
+                // 获取不带表头的制表符分隔文本
+                const tabText = getTabSeparatedTextWithoutHeader(table);
+                copyToClipboard(tabText);
+                
+                // 显示复制成功提示
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check"></i>已复制!';
+                this.style.background = '#2ecc71';
+                
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.style.background = '';
+                }, 2000);
+            });
+        });
+        
+        // 通用格式解析函数
+        function parseOrdersGeneral(input) {
+            const orderBlocks = input.split(/(?=订单编号：)/).filter(block => block.trim());
+            const orders = [];
+            
+            for (const block of orderBlocks) {
+                try {
+                    const order = {};
+                    
+                    // 提取订单编号
+                    const orderIdMatch = block.match(/订单编号：\s*(\d+)/);
+                    if (orderIdMatch) order.orderId = orderIdMatch[1];
+                    
+                    // 提取收货信息
+                    const receiverInfoMatch = block.match(/收货信息：\s*([^,]+),([^,]+),([^\n]+)/);
+                    if (receiverInfoMatch) {
+                        order.receiver = receiverInfoMatch[1];
+                        order.phone = receiverInfoMatch[2];
+                        order.address = receiverInfoMatch[3].trim();
+                    }
+                    
+                    // 提取商品信息和数量
+                    const productMatch = block.match(/颜色分类:([^，]+)[，,]\s*数量：(\d+)件/);
+                    if (productMatch) {
+                        order.product = productMatch[1].trim();
+                        order.quantity = productMatch[2];
+                    }
+                    
+                    if (order.orderId) orders.push(order);
+                } catch (e) {
+                    console.error('解析订单时出错:', e);
+                }
+            }
+            
+            return orders;
+        }
+        
+        // 通用格式显示函数
+        function displayOrdersGeneral(orders) {
+            const tbody = document.querySelector('#resultTableGeneral tbody');
+            tbody.innerHTML = '';
+            
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">未解析到订单数据</td></tr>';
+                document.getElementById('orderCountGeneral').textContent = '0';
+                return;
+            }
+            
+            orders.forEach(order => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.orderId || ''}</td>
+                    <td>${order.receiver || ''}</td>
+                    <td>${order.phone || ''}</td>
+                    <td>${order.address || ''}</td>
+                    <td>${order.product || ''}</td>
+                    <td>${order.quantity || ''}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            document.getElementById('orderCountGeneral').textContent = orders.length;
+        }
+        
+        // LPT格式解析函数
+        function parseOrdersLpt(input) {
+            const orderBlocks = input.split(/(?=订单编号：)/).filter(block => block.trim());
+            const orders = [];
+            
+            for (const block of orderBlocks) {
+                try {
+                    const order = {};
+                    
+                    // 提取订单编号
+                    const orderIdMatch = block.match(/订单编号：\s*(\d+)/);
+                    if (orderIdMatch) order.orderId = orderIdMatch[1];
+                    
+                    // 提取完整的收货信息（保持原样）
+                    const receiverInfoMatch = block.match(/收货信息：([^\n]+)/);
+                    if (receiverInfoMatch) {
+                        order.receiverInfo = receiverInfoMatch[1].trim();
+                    }
+                    
+                    // 提取商品信息和数量
+                    const productMatch = block.match(/颜色分类:([^，]+)[，,]\s*数量：(\d+)件/);
+                    if (productMatch) {
+                        order.product = productMatch[1].trim();
+                        order.quantity = productMatch[2];
+                    }
+                    
+                    if (order.orderId) orders.push(order);
+                } catch (e) {
+                    console.error('解析订单时出错:', e);
+                }
+            }
+            
+            return orders;
+        }
+        
+        // LPT格式显示函数
+        function displayOrdersLpt(orders) {
+            const tbody = document.querySelector('#resultTableLpt tbody');
+            tbody.innerHTML = '';
+            
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">未解析到订单数据</td></tr>';
+                document.getElementById('orderCountLpt').textContent = '0';
+                return;
+            }
+            
+            orders.forEach(order => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.product || ''}</td>
+                    <td>${order.quantity || ''}</td>
+                    <td>${order.receiverInfo || ''}</td>
+                    <td>${order.orderId || ''}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            document.getElementById('orderCountLpt').textContent = orders.length;
+        }
+        
+        // HY格式解析函数
+        function parseOrdersHy(input) {
+            const orderBlocks = input.split(/(?=订单编号：)/).filter(block => block.trim());
+            const orders = [];
+            
+            for (const block of orderBlocks) {
+                try {
+                    // 初始化订单对象，包含所有需要的字段
+                    const order = {
+                        receiver: '',               // 收货人
+                        nickname: '',               // 昵称（旺旺号）- 空字符串
+                        phone: '',                  // 手机号码
+                        fixedPhone: '',             // 固定电话 - 空字符串
+                        warehouse: '默认仓库',      // 仓库名称 - 默认值
+                        province: '',               // 省
+                        city: '',                   // 市
+                        district: '',               // 区
+                        detailAddress: '',          // 详细地址
+                        zipCode: '',                // 邮政编码 - 空字符串
+                        merchantCode: '',           // 商家编码 - 空字符串
+                        quantity: '',               // 数量
+                        paymentAmount: '',          // 商品付款金额 - 空字符串
+                        freight: '',                // 运费 - 空字符串
+                        invoiceTitle: '',           // 发票抬头 - 空字符串
+                        buyerMessage: '',           // 买家留言 - 空字符串
+                        sellerRemark: '',           // 卖家备注 - 空字符串
+                        platformTradeNo: ''         // 平台交易号（订单编号）
+                    };
+                    
+                    // 提取订单编号（作为平台交易号）
+                    const orderIdMatch = block.match(/订单编号：\s*(\d+)/);
+                    if (orderIdMatch) {
+                        order.platformTradeNo = orderIdMatch[1];
+                    }
+                    
+                    // 提取收货信息
+                    const receiverInfoMatch = block.match(/收货信息：\s*([^,]+),([^,]+),([^\n]+)/);
+                    if (receiverInfoMatch) {
+                        order.receiver = receiverInfoMatch[1];  // 收货人
+                        order.phone = receiverInfoMatch[2];     // 手机号码（包含分机号）
+                        
+                        // 提取地址部分
+                        const fullAddress = receiverInfoMatch[3].trim();
+                        const addressParts = fullAddress.split(/\s+/);
+                        
+                        // 尝试提取省市区信息
+                        if (addressParts.length >= 3) {
+                            order.province = addressParts[0];
+                            order.city = addressParts[1];
+                            
+                            // 检查第三个部分是否是区县（包含区、县、市、镇等关键字）
+                            if (addressParts[2].match(/[区县市镇]/)) {
+                                order.district = addressParts[2];
+                                order.detailAddress = addressParts.slice(3).join(' ');
+                            } else {
+                                // 如果第三个部分不是区县，则将其合并到详细地址
+                                order.district = '';
+                                order.detailAddress = addressParts.slice(2).join(' ');
+                            }
+                        } else if (addressParts.length === 2) {
+                            order.province = addressParts[0];
+                            order.city = addressParts[1];
+                            order.detailAddress = '';
+                        } else if (addressParts.length === 1) {
+                            order.detailAddress = addressParts[0];
+                        }
+                        
+                        // 添加配送拨打信息
+                        order.detailAddress += `【配送拨打:${order.phone}】`;
+                    }
+                    
+                    // 提取数量（忽略颜色分类）
+                    const quantityMatch = block.match(/数量：(\d+)件/);
+                    if (quantityMatch) {
+                        order.quantity = quantityMatch[1];
+                    }
+                    
+                    if (order.platformTradeNo) orders.push(order);
+                } catch (e) {
+                    console.error('解析HY格式订单时出错:', e);
+                }
+            }
+            
+            return orders;
+        }
+        
+        // HY格式显示函数
+        function displayOrdersHy(orders) {
+            const tbody = document.querySelector('#resultTableHy tbody');
+            tbody.innerHTML = '';
+            
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="18" style="text-align: center;">未解析到订单数据</td></tr>';
+                document.getElementById('orderCountHy').textContent = '0';
+                return;
+            }
+            
+            orders.forEach(order => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.receiver || ''}</td>
+                    <td>${order.nickname || ''}</td>
+                    <td>${order.phone || ''}</td>
+                    <td>${order.fixedPhone || ''}</td>
+                    <td>${order.warehouse || ''}</td>
+                    <td>${order.province || ''}</td>
+                    <td>${order.city || ''}</td>
+                    <td>${order.district || ''}</td>
+                    <td>${order.detailAddress || ''}</td>
+                    <td>${order.zipCode || ''}</td>
+                    <td>${order.merchantCode || ''}</td>
+                    <td>${order.quantity || ''}</td>
+                    <td>${order.paymentAmount || ''}</td>
+                    <td>${order.freight || ''}</td>
+                    <td>${order.invoiceTitle || ''}</td>
+                    <td>${order.buyerMessage || ''}</td>
+                    <td>${order.sellerRemark || ''}</td>
+                    <td>${order.platformTradeNo || ''}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            document.getElementById('orderCountHy').textContent = orders.length;
+        }
+        
+        // 通用函数：获取不带表头的制表符分隔的文本
+        function getTabSeparatedTextWithoutHeader(table) {
+            let tabText = "";
+            
+            // 只添加数据行，不添加表头
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const cols = row.querySelectorAll('td');
+                for (let i = 0; i < cols.length; i++) {
+                    tabText += cols[i].textContent;
+                    if (i < cols.length - 1) tabText += "\t";
+                }
+                tabText += "\r\n";
+            });
+            
+            return tabText;
+        }
+        
+        // 通用函数：复制到剪贴板
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            
+            // 显示通知
+            showNotification('已复制到剪贴板！');
+        }
+        
+        // 显示通知
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
+        }
+        
+        // 商品编码查询功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const productSearch = document.getElementById('product-search');
+            const searchButton = document.getElementById('search-button');
+            const productList = document.getElementById('product-list');
+            const selectedProductInfo = document.getElementById('selected-product-info');
+            
+            // 商品数据
+            const products = [
+                { name: "草莓小兔软萌屁屁贴", code: "0490-1" },
+                { name: "可爱小熊软萌屁屁贴", code: "0490-2" },
+                { name: "草莓小兔+可爱小熊屁屁贴", code: "Z2889" },
+                { name: "3D立体百变迷宫", code: "Z2769" },
+                { name: "小树毛粘板+切切乐17件套", code: "Z2774" },
+                { name: "切切乐17件套", code: "Z2800" },
+                { name: "小树毛毡板", code: "0473-1" },
+                { name: "爱迪生电力科学宝盒", code: "Z2763" },
+                { name: "DIY炒冰手作球", code: "Z2758" },
+                { name: "公主变装秀", code: "Z2798" },
+                { name: "五官表情秀", code: "Z2797" },
+                { name: "折来折去", code: "0424-1" },
+                { name: "熊有成竹", code: "0475-1" },
+                { name: "DIY果冻沙食玩", code: "0423-1" },
+                { name: "DIY迷你手作食玩", code: "Z1698" },
+                { name: "动物园园长", code: "0464-1" },
+                { name: "水精灵嗨得捞", code: "Z2783" },
+                { name: "闪闪沙画集", code: "Z2573" },
+                { name: "警察抓小偷", code: "Z2212" },
+                { name: "苹果毛毡板+切切乐17件套", code: "Z2777" },
+                { name: "星星人洞洞乐", code: "0500-1" }
+            ];
+            
+            // 初始化商品列表
+            renderProductList(products);
+            
+            // 商品搜索事件
+            searchButton.addEventListener('click', searchProducts);
+            productSearch.addEventListener('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    searchProducts();
+                }
+            });
+            
+            function renderProductList(productsToRender) {
+                productList.innerHTML = '';
+                
+                productsToRender.forEach(product => {
+                    const productItem = document.createElement('div');
+                    productItem.className = 'product-item';
+                    productItem.innerHTML = `
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-code">${product.code}</div>
+                    `;
+                    
+                    productItem.addEventListener('click', function() {
+                        selectProduct(product);
+                    });
+                    
+                    productList.appendChild(productItem);
+                });
+            }
+            
+            function searchProducts() {
+                const searchTerm = productSearch.value.trim().toLowerCase();
+                
+                if (searchTerm === '') {
+                    renderProductList(products);
+                    return;
+                }
+                
+                const filteredProducts = products.filter(product => 
+                    product.name.toLowerCase().includes(searchTerm) || 
+                    product.code.toLowerCase().includes(searchTerm)
+                );
+                
+                renderProductList(filteredProducts);
+                
+                // 高亮显示匹配的文本
+                const items = productList.getElementsByClassName('product-item');
+                Array.from(items).forEach(item => {
+                    const nameElement = item.querySelector('.product-name');
+                    const codeElement = item.querySelector('.product-code');
+                    
+                    // 移除之前的高亮
+                    nameElement.innerHTML = nameElement.textContent;
+                    codeElement.innerHTML = codeElement.textContent;
+                    
+                    // 高亮名称中的匹配文本
+                    if (nameElement.textContent.toLowerCase().includes(searchTerm)) {
+                        const regex = new RegExp(`(${searchTerm})`, 'gi');
+                        nameElement.innerHTML = nameElement.textContent.replace(regex, '<span class="highlight">$1</span>');
+                    }
+                    
+                    // 高亮编码中的匹配文本
+                    if (codeElement.textContent.toLowerCase().includes(searchTerm)) {
+                        const regex = new RegExp(`(${searchTerm})`, 'gi');
+                        codeElement.innerHTML = codeElement.textContent.replace(regex, '<span class="highlight">$1</span>');
+                    }
+                });
+            }
+            
+            function selectProduct(product) {
+                selectedProductInfo.innerHTML = `
+                    <strong>${product.name}</strong> - <span style="color: var(--primary-color);">${product.code}</span>
+                    <button class="copy-btn" style="margin-left: 10px;" data-product-code="${product.code}">复制编码</button>
+                `;
+                
+                // 添加复制编码按钮的事件
+                const copyBtn = selectedProductInfo.querySelector('.copy-btn');
+                copyBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    copyToClipboard(product.code);
+                    showNotification(`已复制商品编码: ${product.code}`);
+                });
+            }
+            
+            // 添加示例订单到HY格式输入框
+            document.getElementById('inputDataHy').value = ``;
+        });
+    </script>
+
+
+</body></html>
