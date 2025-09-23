@@ -280,6 +280,93 @@
             font-size: 14px;
         }
         
+        /* 商品编码查询部分 - 更新为新样式 */
+        .product-section {
+            padding: 25px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        .search-container {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        #product-search {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 6px 0 0 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        #product-search:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        #search-button {
+            border-radius: 0 6px 6px 0;
+            background: var(--primary-color);
+            color: white;
+            padding: 0 25px;
+        }
+        
+        .product-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .product-item:last-child {
+            border-bottom: none;
+        }
+        
+        .product-item:hover {
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+        
+        .product-name {
+            flex: 2;
+        }
+        
+        .product-code {
+            flex: 1;
+            text-align: right;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .highlight {
+            background-color: #fff8e1;
+            font-weight: bold;
+        }
+        
+        .selected-product {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .selected-product h3 {
+            margin-bottom: 10px;
+            color: #2e7d32;
+        }
+        
         .notification {
             position: fixed;
             top: 20px;
@@ -316,6 +403,20 @@
             
             .table-container {
                 overflow-x: auto;
+            }
+            
+            .search-container {
+                flex-direction: column;
+            }
+            
+            #product-search {
+                border-radius: 6px;
+                margin-bottom: 10px;
+            }
+            
+            #search-button {
+                border-radius: 6px;
+                padding: 15px;
             }
         }
     </style>
@@ -394,7 +495,7 @@
                 </div>
             </div>
             
-            <!-- 其他格式标签页内容保持不变 -->
+            <!-- 通用格式（不拆分） -->
             <div class="tab-content" id="general-unsplit">
                 <h2>通用格式（不拆分）解析</h2>
                 <textarea id="inputDataGeneralUnsplit" placeholder="请粘贴快捷复制的订单信息..."></textarea>
@@ -524,6 +625,27 @@
                 <div class="stats">
                     <i class="fas fa-chart-bar"></i>已解析: <span class="stats-badge" id="orderCountHy">0</span> 个订单
                 </div>
+                
+                <!-- 商品编码查询部分 - 替换为新功能 -->
+                <div class="product-section">
+                    <h3>商品编码查询</h3>
+                    <div class="search-container">
+                        <input type="text" id="product-search" placeholder="输入商品名称或编码搜索...">
+                        <button id="search-button">
+                            <i class="fas fa-search"></i>搜索
+                        </button>
+                    </div>
+                    
+                    <div class="selected-product">
+                        <h3>已选商品</h3>
+                        <div id="selected-product-info">暂无选择</div>
+                    </div>
+                    
+                    <h3 style="margin: 20px 0 10px;">商品列表</h3>
+                    <div class="product-list" id="product-list">
+                        <!-- 商品列表将通过JavaScript动态生成 -->
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -543,6 +665,34 @@
             'hy': []
         };
         
+        // 商品数据 - 替换为新的商品列表
+        const products = [
+            { name: "草莓小兔软萌屁屁贴", code: "0490-1" },
+            { name: "可爱小熊软萌屁屁贴", code: "0490-2" },
+            { name: "草莓小兔+可爱小熊屁屁贴", code: "Z2889" },
+            { name: "3D立体百变迷宫", code: "Z2769" },
+            { name: "小树毛粘板+切切乐17件套", code: "Z2774" },
+            { name: "切切乐17件套", code: "Z2800" },
+            { name: "小树毛毡板", code: "0473-1" },
+            { name: "爱迪生电力科学宝盒", code: "Z2763" },
+            { name: "DIY炒冰手作球", code: "Z2758" },
+            { name: "公主变装秀", code: "Z2798" },
+            { name: "五官表情秀", code: "Z2797" },
+            { name: "折来折去", code: "0424-1" },
+            { name: "熊有成竹", code: "0475-1" },
+            { name: "DIY果冻沙食玩", code: "0423-1" },
+            { name: "DIY迷你手作食玩", code: "Z1698" },
+            { name: "动物园园长", code: "0464-1" },
+            { name: "水精灵嗨得捞", code: "Z2783" },
+            { name: "闪闪沙画集", code: "Z2573" },
+            { name: "警察抓小偷", code: "Z2212" },
+            { name: "苹果毛毡板+切切乐17件套", code: "Z2777" },
+            { name: "星星人洞洞乐", code: "0500-1" }
+        ];
+        
+        // 当前选中的商品
+        let selectedProduct = null;
+        
         // 辅助函数：将带连字符的字符串转换为驼峰式命名
         function kebabToCamelCase(str) {
             return str.replace(/-([a-z])/g, function(g) {
@@ -560,6 +710,96 @@
             return `${baseStr}【配送拨打:${phone}】`;
         }
         
+        // 初始化商品列表
+        function initProductList() {
+            renderProductList(products);
+        }
+        
+        // 渲染商品列表
+        function renderProductList(productsToRender, searchTerm = '') {
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = '';
+            
+            if (productsToRender.length === 0) {
+                productList.innerHTML = '<div style="text-align: center; padding: 20px;">未找到匹配的商品</div>';
+                return;
+            }
+            
+            productsToRender.forEach(product => {
+                const productItem = document.createElement('div');
+                productItem.className = 'product-item';
+                
+                // 高亮搜索匹配的文本
+                let displayName = product.name;
+                let displayCode = product.code;
+                
+                if (searchTerm) {
+                    const regex = new RegExp(`(${searchTerm})`, 'gi');
+                    displayName = product.name.replace(regex, '<span class="highlight">$1</span>');
+                    displayCode = product.code.replace(regex, '<span class="highlight">$1</span>');
+                }
+                
+                productItem.innerHTML = `
+                    <div class="product-name">${displayName}</div>
+                    <div class="product-code">${displayCode}</div>
+                `;
+                
+                productItem.addEventListener('click', () => {
+                    selectProduct(product);
+                });
+                
+                productList.appendChild(productItem);
+            });
+        }
+        
+        // 搜索商品
+        function searchProducts() {
+            const searchTerm = document.getElementById('product-search').value.trim().toLowerCase();
+            
+            if (!searchTerm) {
+                renderProductList(products);
+                return;
+            }
+            
+            const filteredProducts = products.filter(product => 
+                product.name.toLowerCase().includes(searchTerm) || 
+                product.code.toLowerCase().includes(searchTerm)
+            );
+            
+            renderProductList(filteredProducts, searchTerm);
+        }
+        
+        // 选择商品
+        function selectProduct(product) {
+            selectedProduct = product;
+            
+            const selectedProductInfo = document.getElementById('selected-product-info');
+            
+            selectedProductInfo.innerHTML = `
+                <strong>${product.name}</strong> - <span style="color: var(--primary-color);">${product.code}</span>
+                <button class="copy-btn" style="margin-left: 10px; padding: 5px 10px; font-size: 12px;" 
+                        data-product-code="${product.code}">复制编码</button>
+            `;
+            
+            // 添加复制编码按钮的事件
+            const copyBtn = selectedProductInfo.querySelector('.copy-btn');
+            copyBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                copyToClipboard(product.code);
+                showNotification(`已复制商品编码: ${product.code}`);
+            });
+            
+            // 如果有解析的订单，更新商家编码
+            if (parsedData['hy'].length > 0) {
+                // 更新最后一个订单的商家编码
+                parsedData['hy'][parsedData['hy'].length - 1].merchantCode = product.code;
+                displayOrdersHy(parsedData['hy']);
+                showNotification(`已为最新订单设置商品编码: ${product.code}`);
+            } else {
+                showNotification(`已选择商品: ${product.name}`);
+            }
+        }
+        
         // 选项卡切换功能
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
@@ -569,7 +809,20 @@
                 tab.classList.add('active');
                 const tabId = tab.getAttribute('data-tab');
                 document.getElementById(tabId).classList.add('active');
+                
+                // 切换到HY格式时初始化商品列表
+                if (tabId === 'hy') {
+                    initProductList();
+                }
             });
+        });
+        
+        // 商品搜索事件监听
+        document.getElementById('search-button').addEventListener('click', searchProducts);
+        document.getElementById('product-search').addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                searchProducts();
+            }
         });
         
         // 解析按钮事件
@@ -601,6 +854,12 @@
                     orders = parseOrdersHy(inputData);
                     parsedData[format] = orders;
                     displayOrdersHy(orders);
+                    
+                    // 如果有选中的商品，更新第一个订单的商家编码
+                    if (selectedProduct) {
+                        parsedData[format][0].merchantCode = selectedProduct.code;
+                        displayOrdersHy(parsedData[format]);
+                    }
                 }
             });
         });
@@ -631,6 +890,9 @@
                     document.querySelector('#resultTableHy tbody').innerHTML = 
                         '<tr><td colspan="18" style="text-align: center;">请输入订单信息并点击解析</td></tr>';
                     document.getElementById('orderCountHy').textContent = '0';
+                    // 重置选中的商品
+                    selectedProduct = null;
+                    document.getElementById('selected-product-info').textContent = '暂无选择';
                 }
             });
         });
@@ -980,7 +1242,7 @@
                         district: '',
                         detailAddress: '',
                         zipCode: '',
-                        merchantCode: '',
+                        merchantCode: '', // 商家编码字段
                         quantity: '',
                         paymentAmount: '',
                         freight: '',
@@ -1105,5 +1367,13 @@
                 notification.classList.remove('show');
             }, 2000);
         }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 如果默认显示HY格式，则初始化商品列表
+            if (document.getElementById('hy').classList.contains('active')) {
+                initProductList();
+            }
+        });
     </script>
 </body></html>
