@@ -2,8 +2,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>订单信息拆分工具</title>
-    <link rel="icon" href="https://youke1.picui.cn/s1/2025/09/24/68d359343a560.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="https://youke1.picui.cn/s1/2025/09/24/68d359343a560.ico">
     <style>
         :root {
             --primary-color: #4361ee;
@@ -281,7 +281,7 @@
             font-size: 14px;
         }
         
-        /* 商品编码查询部分 - 更新为新样式 */
+        /* 商品编码查询部分 */
         .product-section {
             padding: 25px;
             background: #f9f9f9;
@@ -326,17 +326,33 @@
         .product-item {
             display: flex;
             justify-content: space-between;
-            padding: 12px 10px;
+            padding: 12px 15px;
             border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            transform: translateX(0);
         }
         
         .product-item:last-child {
             border-bottom: none;
+            margin-bottom: 0;
         }
         
+        /* 商品项 hover 动效 */
         .product-item:hover {
-            background-color: #f9f9f9;
-            cursor: pointer;
+            background-color: #f0f7ff;
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(67, 97, 238, 0.1);
+        }
+        
+        /* 商品项 点击动效 - 只保留临时动效，不保留选中状态 */
+        .product-item:active {
+            transform: scale(0.98);
+            background-color: #ddeaff;
+            box-shadow: 0 2px 5px rgba(67, 97, 238, 0.2);
+            transition: all 0.1s ease;
         }
         
         .product-name {
@@ -627,7 +643,7 @@
                     <i class="fas fa-chart-bar"></i>已解析: <span class="stats-badge" id="orderCountHy">0</span> 个订单
                 </div>
                 
-                <!-- 商品编码查询部分 - 替换为新功能 -->
+                <!-- 商品编码查询部分 -->
                 <div class="product-section">
                     <h3>商品编码查询</h3>
                     <div class="search-container">
@@ -666,7 +682,7 @@
             'hy': []
         };
         
-        // 商品数据 - 替换为新的商品列表
+        // 商品数据
         const products = [
             { name: "草莓小兔软萌屁屁贴", code: "0490-1" },
             { name: "可爱小熊软萌屁屁贴", code: "0490-2" },
@@ -687,11 +703,18 @@
             { name: "水精灵嗨得捞", code: "Z2783" },
             { name: "闪闪沙画集", code: "Z2573" },
             { name: "警察抓小偷", code: "Z2212" },
-            { name: "苹果毛毡板+切切乐17件套", code: "Z2777" },
-            { name: "星星人洞洞乐", code: "0500-1" }
+            { name: "苹果毛毡板+切切乐11件套", code: "Z2777" },
+            { name: "星星人洞洞乐", code: "0500-1" },
+            { name: "加大火箭材料包+双面胶", code: "Z1970" },
+            { name: "加大火箭材料包+胶枪+双面胶", code: "Z1971" },
+            { name: "场景配件灯带_宇航棉花", code: "Z1974" },
+            { name: "宇航员火箭灯光套餐A", code: "Z1972" },
+            { name: "宇航员火箭灯光套餐B", code: "Z1973" },
+            { name: "火箭材料包+双面胶", code: "Z1968" },
+            { name: "火箭材料包+胶枪胶棒+双面胶", code: "Z1969" }
         ];
         
-        // 当前选中的商品
+        // 当前选中的商品（仅在内存中记录，不显示视觉选中状态）
         let selectedProduct = null;
         
         // 辅助函数：将带连字符的字符串转换为驼峰式命名
@@ -699,16 +722,6 @@
             return str.replace(/-([a-z])/g, function(g) {
                 return g[1].toUpperCase();
             });
-        }
-        
-        // 辅助函数：添加配送信息，避免重复，保留"转"字
-        function addDeliveryInfo(baseStr, phone) {
-            // 检查是否已包含配送信息
-            if (baseStr.includes('【配送拨打:')) {
-                return baseStr;
-            }
-            // 保留原始电话号码中的"转"字，不进行替换
-            return `${baseStr}【配送拨打:${phone}】`;
         }
         
         // 初始化商品列表
@@ -745,6 +758,7 @@
                     <div class="product-code">${displayCode}</div>
                 `;
                 
+                // 添加点击事件和临时动效
                 productItem.addEventListener('click', () => {
                     selectProduct(product);
                 });
@@ -770,7 +784,7 @@
             renderProductList(filteredProducts, searchTerm);
         }
         
-        // 选择商品
+        // 选择商品（仅在内存中记录，不显示视觉选中状态）
         function selectProduct(product) {
             selectedProduct = product;
             
@@ -961,8 +975,8 @@
                     
                     const receiver = receiverInfoMatch[1];
                     const phone = receiverInfoMatch[2];
-                    // 使用辅助函数添加配送信息，避免重复
-                    const address = addDeliveryInfo(receiverInfoMatch[3].trim(), phone);
+                    // 直接使用原始地址，不添加额外信息
+                    const address = receiverInfoMatch[3].trim();
                     
                     // 提取所有商品信息和数量
                     const productMatches = block.match(/(颜色分类|款式描述):([^，,]+)[，,]\s*数量：(\d+)件/g);
@@ -1057,9 +1071,8 @@
                     
                     let receiverInfo = fullReceiverInfo;
                     if (phoneMatch) {
-                        const phone = phoneMatch[2];
-                        // 使用辅助函数添加配送信息，避免重复
-                        receiverInfo = `${phoneMatch[1]},${phone},${addDeliveryInfo(phoneMatch[3], phone)}`;
+                        // 直接使用原始地址，不添加额外信息
+                        receiverInfo = `${phoneMatch[1]},${phoneMatch[2]},${phoneMatch[3]}`;
                     }
                     
                     const productMatches = block.match(/(颜色分类|款式描述):([^，,]+)[，,]\s*数量：(\d+)件/g);
@@ -1145,9 +1158,8 @@
                     const phoneMatch = receiverInfo.match(/([^,]+),([^,]+),(.*)/);
                     
                     if (phoneMatch) {
-                        const phone = phoneMatch[2];
-                        // 使用辅助函数添加配送信息，避免重复
-                        receiverInfo = `${phoneMatch[1]},${phone},${addDeliveryInfo(phoneMatch[3], phone)}`;
+                        // 直接使用原始地址，不添加额外信息
+                        receiverInfo = `${phoneMatch[1]},${phoneMatch[2]},${phoneMatch[3]}`;
                     }
                     
                     const productMatches = block.match(/(颜色分类|款式描述):([^，,]+)[，,]\s*数量：(\d+)件/g);
@@ -1273,8 +1285,7 @@
                         baseOrder.detailAddress = addressParts[0];
                     }
                     
-                    // 使用辅助函数添加配送信息，避免重复
-                    baseOrder.detailAddress = addDeliveryInfo(baseOrder.detailAddress, phone);
+                    // 直接使用原始地址，不添加额外信息
                     
                     const productMatches = block.match(/(颜色分类|款式描述):([^，,]+)[，,]\s*数量：(\d+)件/g);
                     
@@ -1378,6 +1389,4 @@
         });
     </script>
 </body></html>
-
-
-
+    
